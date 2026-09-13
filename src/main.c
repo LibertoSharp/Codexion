@@ -3,14 +3,14 @@
 
 int	main(int argc, char **argv)
 {
-	t_simulation	*sim;
+	t_settings	*settings;
 
-	sim = s_parse(argc, argv);
-	if (sim == NULL)
+	settings = s_parse(argc, argv);
+	if (settings == NULL)
 	{
 		s_print_usage();
 		return (0);
 	}
-	s_print(sim);
+	run(settings);
 	return (0);
 }

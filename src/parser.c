@@ -17,14 +17,14 @@ static int	get_positive_integer(char *str)
 	return (atoi(str));
 }
 
-t_simulation	*s_parse(int argc, char **argv)
+t_settings	*s_parse(int argc, char **argv)
 {
-	t_simulation	*sim;
+	t_settings	*sim;
 	int				i;
 
 	if (argc != 9)
 		return (NULL);
-	sim = (t_simulation *)malloc(sizeof(t_simulation));
+	sim = (t_settings *)malloc(sizeof(t_settings));
 	if (sim == NULL)
 		return (NULL);
 
@@ -46,7 +46,7 @@ t_simulation	*s_parse(int argc, char **argv)
 	return (sim);
 }
 
-void	s_print(t_simulation *sim)
+void	s_print(t_settings *sim)
 {
 	printf("Simulation Settings:");
 
