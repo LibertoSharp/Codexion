@@ -1,4 +1,4 @@
-#include "simulation.h"
+#include "parser.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -29,10 +29,10 @@ t_simulation	*s_parse(int argc, char **argv)
 		return (NULL);
 
 	i = 0;
-	while (++i < 7)
+	while (i < 7)
 	{
-		((int *)sim)[i] = get_positive_integer(argv[i + 1]);
-		if (((int *)sim)[i] == -1)
+		((int *)sim)[i] = get_positive_integer(argv[i+1]);
+		if (((int *)sim)[i++] == -1)
 			return (free(sim), NULL);
 	}
 
