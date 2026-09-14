@@ -19,19 +19,28 @@ typedef struct s_settings
 
 typedef struct s_coder t_coder;
 
+typedef struct s_dongle
+{
+	long			last_time_used;
+	int				busy;
+	pthread_mutex_t	mutex;
+} t_dongle;
+
 typedef struct s_simulation
 {
-	t_settings	*settings;
-	t_coder		*coders;
-	int			*dongles;
-	int			running;
+	long			start_time;
+	t_settings		*settings;
+	t_coder			*coders;
+	t_dongle		*dongles;
+	int				running;
 }	t_simulation;
 
 typedef struct s_coder
 {
 	t_simulation	*sim;
-	int c_id;
-	pthread_t t_id;
+	int				c_id;
+	pthread_t		t_id;
+	int				compilation_count;
 }	t_coder;
 
 void	run(t_settings *settings);

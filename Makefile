@@ -4,7 +4,7 @@ INC_DIR = includes
 CFLAGS = -Wall -Wextra -Werror -I $(INC_DIR)
 LD = ld
 RM = rm -f
-SRCS = src/main.c src/parser.c src/simulation.c src/worker.c
+SRCS = src/main.c src/parser.c src/simulation.c src/worker.c src/timeutils.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(NAME)
