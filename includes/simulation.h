@@ -22,7 +22,6 @@ typedef struct s_coder t_coder;
 typedef struct s_dongle
 {
 	long			last_time_used;
-	int				busy;
 	pthread_mutex_t	mutex;
 } t_dongle;
 
@@ -33,6 +32,8 @@ typedef struct s_simulation
 	t_coder			*coders;
 	t_dongle		*dongles;
 	int				running;
+	pthread_mutex_t	print_mutex;
+	pthread_mutex_t	state_mutex;
 }	t_simulation;
 
 typedef struct s_coder
@@ -41,7 +42,10 @@ typedef struct s_coder
 	int				c_id;
 	pthread_t		t_id;
 	int				compilation_count;
+	long			last_compilation;
+	pthread_mutex_t	mutex;
 }	t_coder;
 
 void	run(t_settings *settings);
+int		is_running(t_simulation *sim);
 #endif
