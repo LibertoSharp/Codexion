@@ -27,48 +27,9 @@ static void sleep_remaining_cooldown(t_dongle *d, long long cooldown)
         usleep((cooldown - elapsed) * 1000);
 }
 
-static int try_take_dongles(t_coder *coder)
+static void take_dongles(t_coder *coder)
 {
-	int numbers_of_coders;
-	int has_left = 0;
-	int has_right = 0;
-
-	numbers_of_coders = coder->sim->settings->number_of_coders;
-	t_dongle *left = &coder->sim->dongles[(coder->c_id) % numbers_of_coders];
-	t_dongle *right = &coder->sim->dongles[(coder->c_id + 1) % numbers_of_coders];
-
-	if (coder->c_id == numbers_of_coders-1)
-		ft_swap((void **)&left, (void **)&right);
-
-	while((!has_left || !has_right) && coder->sim->running)
-	{
-		pthread_mutex_lock(&left->mutex);
-		if (TIME - left->last_time_used > coder->sim->settings->dongle_cooldown)
-			has_left = 1;
-		else
-		{
-			pthread_mutex_unlock(&left->mutex);
-			has_left = 0;
-			sleep_remaining_cooldown(left, coder->sim->settings->dongle_cooldown);
-			continue;
-		}
-		pthread_mutex_lock(&right->mutex);
-		if (TIME - right->last_time_used > coder->sim->settings->dongle_cooldown)
-			has_right = 1;
-		else
-		{
-			pthread_mutex_unlock(&right->mutex);
-			pthread_mutex_unlock(&left->mutex);
-			has_left = 0;
-			has_right = 0;
-			sleep_remaining_cooldown(right, coder->sim->settings->dongle_cooldown);
-		}
-	}
-
-	if (!has_left || !has_right)
-		return (0);
-
-	return (1);
+	coder.
 }
 
 static void unlock_dongles(t_coder *coder)
@@ -93,11 +54,11 @@ void	*worker(void *arg)
 	coder = (t_coder *)arg;
 	while(is_running(coder->sim))
 	{
-		if (!try_take_dongles(coder))
+		if (!try_take_dongles_FIFO(coder))
 			continue;
-		print_status(coder, "has taken a dongle");
-		print_status(coder, "has taken a dongle");
 
+		print_status(coder, "has taken a dongle");
+		print_status(coder, "has taken a dongle");
 		print_status(coder, "is compiling");
 		usleep(coder->sim->settings->time_to_compile * 1000);
 
