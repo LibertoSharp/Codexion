@@ -4,13 +4,13 @@ INC_DIR = includes
 CFLAGS = -Wall -Wextra -Werror -pthread -I $(INC_DIR)
 LD = ld
 RM = rm -f
-SRCS = src/main.c src/parser.c src/simulation.c src/worker.c src/utils/timeutils.c src/utils/ft_utils.c src/utils/heap.c
+SRCS = src/main.c src/parser.c src/simulation.c src/worker.c src/utils/timeutils.c src/utils/ft_utils.c src/utils/heap.c src/scheduler_functions.c src/utils/worker_utils.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(NAME)
 
 run: re
-	./$(NAME) 5 5000 100 100 100 3 500 fifo
+	./$(NAME) 5 1000 100 100 100 3 500 fifo
 
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^

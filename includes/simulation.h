@@ -2,6 +2,7 @@
 # define SIMULATION_H
 
 #include <pthread.h>
+#include "utils/heap.h"
 # define S_FIFO 0
 # define S_EDF 1
 
@@ -22,7 +23,9 @@ typedef struct s_coder t_coder;
 typedef struct s_dongle
 {
 	pthread_mutex_t	mutex;
+	pthread_cond_t	cond;
 	long			last_time_used;
+	t_heap			*priority_queue;
 } t_dongle;
 
 typedef struct s_simulation

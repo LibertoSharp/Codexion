@@ -4,76 +4,88 @@
 #include "utils/ft_utils.h"
 #include <stdio.h>
 #include <unistd.h>
+#include "utils/worker_utils.h"
 
-void print_status(t_coder *coder, const char *status)
+static int take_dongle(t_coder *coder, t_dongle *dongle)
 {
-    long long now;
+	pthread_mutex_lock(&dongle->mutex);
+	heap_append(dongle->priority_queue, (void *)coder);
 
-    pthread_mutex_lock(&coder->sim->print_mutex);
-    
-    if (is_running(coder->sim))
-    {
-        now = TIME - coder->sim->start_time;
-        printf("%lld %d %s\n", now, coder->c_id + 1, status);
-    }
-    
-    pthread_mutex_unlock(&coder->sim->print_mutex);
+	sleep_remaining_cooldown(dongle, coder->sim->settings->dongle_cooldown);
+
+	while (is_running(coder->sim)
+		&& heap_peek(dongle->priority_queue) != (void *)coder)
+	{
+		pthread_cond_wait(&dongle->cond, &dongle->mutex);
+	}
+	if (!is_running(coder->sim))
+	{
+		heap_remove(dongle->priority_queue, coder);
+		pthread_cond_broadcast(&dongle->cond);
+		pthread_mutex_unlock(&dongle->mutex);
+		return (0);
+	}
+
+	print_status(coder, "has taken a dongle");
+	return (1);
 }
 
-static void sleep_remaining_cooldown(t_dongle *d, long long cooldown)
+static void release_dongle(t_dongle *dongle)
 {
-    long long elapsed = TIME - d->last_time_used;
-    if (elapsed < cooldown)
-        usleep((cooldown - elapsed) * 1000);
+	dongle->last_time_used = TIME;
+	heap_pop(dongle->priority_queue);
+	pthread_cond_broadcast(&dongle->cond);
+	pthread_mutex_unlock(&dongle->mutex);
 }
 
-static void take_dongles(t_coder *coder)
+static int compile(t_coder *coder, t_simulation *sim)
 {
-	coder.
-}
+	t_dongle		*left;
+	t_dongle		*right;
 
-static void unlock_dongles(t_coder *coder)
-{
-	int numbers_of_coders;
+	left = &sim->dongles[coder->c_id];
+	right = &sim->dongles[(coder->c_id + 1) % sim->settings->number_of_coders];
 
-	numbers_of_coders = coder->sim->settings->number_of_coders;
-	t_dongle *left = &coder->sim->dongles[(coder->c_id) % numbers_of_coders];
-	t_dongle *right = &coder->sim->dongles[(coder->c_id + 1) % numbers_of_coders];
+	if (coder->c_id == sim->settings->number_of_coders-1)
+		ft_swap((void **)&left, (void **)&right);
 
-	left->last_time_used = TIME;
-	right->last_time_used = TIME;
+	if (!take_dongle(coder, left))
+		return 0;
+	if (!take_dongle(coder, right))
+	{
+		release_dongle(left);
+		return 0;
+	}
 
-	pthread_mutex_unlock(&left->mutex);
-	pthread_mutex_unlock(&right->mutex);
+	print_status(coder, "is compiling");
+	usleep(sim->settings->time_to_compile * 1000);
+
+	release_dongle(left);
+	release_dongle(right);
+
+	pthread_mutex_lock(&coder->mutex);
+	coder->compilation_count++;
+	coder->last_compilation = TIME;
+	pthread_mutex_unlock(&coder->mutex);
+	return (1);
 }
 
 void	*worker(void *arg)
 {
-	t_coder *coder;
+	t_coder			*coder;
+	t_simulation	*simulation;
 
 	coder = (t_coder *)arg;
+	simulation = coder->sim;
 	while(is_running(coder->sim))
 	{
-		if (!try_take_dongles_FIFO(coder))
+		if (!compile(coder, simulation))
 			continue;
 
-		print_status(coder, "has taken a dongle");
-		print_status(coder, "has taken a dongle");
-		print_status(coder, "is compiling");
-		usleep(coder->sim->settings->time_to_compile * 1000);
-
-		pthread_mutex_lock(&coder->mutex);
-		coder->last_compilation = TIME;
-		coder->compilation_count++;
-		pthread_mutex_unlock(&coder->mutex);
-
-		unlock_dongles(coder);
-		
 		print_status(coder, "is debugging");
-		usleep(coder->sim->settings->time_to_debug * 1000);
-
+		usleep(simulation->settings->time_to_debug * 1000);
 		print_status(coder, "is refactoring");
-		usleep(coder->sim->settings->time_to_refactor * 1000);
+		usleep(simulation->settings->time_to_refactor * 1000);
 	}
 	return NULL;
 }

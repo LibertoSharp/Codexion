@@ -4,6 +4,8 @@
 #include "worker.h"
 #include "utils/timeutils.h"
 #include "utils/ft_utils.h"
+#include "scheduler_functions.h"
+#include <unistd.h>
 
 static t_simulation	*create_simulation(t_settings *settings)
 {
@@ -16,16 +18,18 @@ static t_simulation	*create_simulation(t_settings *settings)
 	simulation->dongles = (t_dongle *)ft_calloc(settings->number_of_coders, sizeof(t_dongle));
     pthread_mutex_init(&simulation->print_mutex, NULL);
 	pthread_mutex_init(&simulation->state_mutex, NULL);
-
-	i = 0;
-	while (i < settings->number_of_coders)
+	
+	i = -1;
+	while (++i < settings->number_of_coders)
 	{
 		simulation->coders[i].sim = simulation;
 		simulation->coders[i].c_id = i;
 		simulation->coders[i].last_compilation = TIME;
 		pthread_mutex_init(&simulation->dongles[i].mutex, NULL);
 		pthread_mutex_init(&simulation->coders[i].mutex, NULL);
-		i++;
+		simulation->dongles[i].priority_queue = heap_allocate(2);
+		pthread_cond_init(&simulation->dongles[i].cond, NULL);
+		set_scheduler_function(settings, simulation->dongles + i);
 	}
 	simulation->running = 1;
 	simulation->start_time = TIME;
@@ -46,19 +50,16 @@ int is_running(t_simulation *sim)
 
 static void stop_running(t_simulation *sim)
 {
+	int i;
+
 	pthread_mutex_lock(&sim->state_mutex);
 	sim->running = 0;
 	pthread_mutex_unlock(&sim->state_mutex);
-}
 
-static void wait_coders(t_simulation *sim)
-{
-	int i;
-	
 	i = 0;
 	while (i < sim->settings->number_of_coders)
 	{
-		pthread_join(sim->coders[i].t_id, NULL);
+		pthread_cond_broadcast(&sim->dongles[i].cond);
 		i++;
 	}
 }
@@ -107,13 +108,15 @@ void	run(t_settings *settings)
 	}
 
 	monitor(simulation);
-	wait_coders(simulation);
 
 	i = 0;
 	while (i < settings->number_of_coders)
 	{
+		pthread_join(simulation->coders[i].t_id, NULL);
 		pthread_mutex_destroy(&simulation->coders[i].mutex);
 		pthread_mutex_destroy(&simulation->dongles[i].mutex);
+		pthread_cond_destroy(&simulation->dongles[i].cond);
+		heap_free(simulation->dongles[i].priority_queue);
 		i++;
 	}
 	pthread_mutex_destroy(&simulation->state_mutex);
