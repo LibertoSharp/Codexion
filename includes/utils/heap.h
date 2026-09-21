@@ -15,6 +15,7 @@ int		heap_contains(t_heap *heap, void *element);
 void	heap_remove(t_heap *heap, void *element);
 void	heap_pop(t_heap *heap);
 void	*heap_peek(t_heap *heap);
+void	heap_clear(t_heap *heap);
 void	heap_free(t_heap *heap);
 
 #endif

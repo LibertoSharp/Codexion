@@ -18,10 +18,10 @@ int edf(void *e1, void *e2)
 	left = (t_coder *)e1;
 	right = (t_coder *)e2;
 
-	left_remaining = left->sim->settings->time_to_burnout - TIME - left->last_compilation;
-	right_remaining = right->sim->settings->time_to_burnout - TIME - right->last_compilation;
+	left_remaining = left->sim->settings->time_to_burnout - (TIME - left->last_compilation);
+	right_remaining = right->sim->settings->time_to_burnout - (TIME - right->last_compilation);
 
-	return (left_remaining < right_remaining);
+	return (left_remaining <= right_remaining);
 }
 
 void set_scheduler_function(t_settings *settings, t_dongle *dongle)

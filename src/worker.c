@@ -66,15 +66,16 @@ static int compile(t_coder *coder, t_simulation *sim)
 		return (0);
 	}
 
+	pthread_mutex_lock(&coder->mutex);
+	coder->last_compilation = TIME;
+
 	print_status(coder, "is compiling");
 	usleep(sim->settings->time_to_compile * 1000);
 
 	release_dongle(left);
 	release_dongle(right);
 
-	pthread_mutex_lock(&coder->mutex);
 	coder->compilation_count++;
-	coder->last_compilation = TIME;
 	pthread_mutex_unlock(&coder->mutex);
 	return (1);
 }
@@ -86,6 +87,7 @@ void	*worker(void *arg)
 
 	coder = (t_coder *)arg;
 	simulation = coder->sim;
+
 	while(is_running(coder->sim))
 	{
 		if (!compile(coder, simulation))
