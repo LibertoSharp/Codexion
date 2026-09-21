@@ -50,11 +50,20 @@ static int compile(t_coder *coder, t_simulation *sim)
 		ft_swap((void **)&left, (void **)&right);
 
 	if (!take_dongle(coder, left))
-		return 0;
+		return (0);
+
+	if (left == right)
+	{
+		while (is_running(coder->sim))
+			pthread_cond_wait(&left->cond, &left->mutex);
+		release_dongle(left);
+		return (0);
+	}
+
 	if (!take_dongle(coder, right))
 	{
 		release_dongle(left);
-		return 0;
+		return (0);
 	}
 
 	print_status(coder, "is compiling");
