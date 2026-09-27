@@ -4,5 +4,6 @@
 #define TIME get_time_ms()
 
 long long	get_time_ms(void);
+struct timespec ms_to_timespec(long long milliseconds);
 
 #endif

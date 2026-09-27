@@ -10,7 +10,7 @@ OBJS = $(SRCS:.c=.o)
 all: $(NAME)
 
 run: re
-	./$(NAME) 5 3000 200 200 200 10 800 edf
+	./$(NAME) 4 1000 200 100 150 5 50 fifo
 
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^

@@ -26,6 +26,7 @@ typedef struct s_dongle
 	pthread_cond_t	cond;
 	long			last_time_used;
 	t_heap			*priority_queue;
+    int             occupied;
 } t_dongle;
 
 typedef struct s_simulation
@@ -47,6 +48,7 @@ typedef struct s_coder
 	pthread_t		t_id;
 	int				compilation_count;
 	long			last_compilation;
+    t_dongle        *dongles[2];
 }	t_coder;
 
 void	run(t_settings *settings);

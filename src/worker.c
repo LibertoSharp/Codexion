@@ -6,97 +6,89 @@
 #include <unistd.h>
 #include "utils/worker_utils.h"
 
-static int take_dongle(t_coder *coder, t_dongle *dongle)
+static int queue_dongle(t_coder *coder, t_dongle *dongle)
 {
+	long long cooldown;
+	long long remaining;
+	struct timespec _timespec;
+
 	pthread_mutex_lock(&dongle->mutex);
 	heap_append(dongle->priority_queue, (void *)coder);
 
-	sleep_remaining_cooldown(dongle, coder->sim->settings->dongle_cooldown);
+	cooldown = coder->sim->settings->dongle_cooldown;
 
-	while (is_running(coder->sim)
-		&& heap_peek(dongle->priority_queue) != (void *)coder)
+	while (1)
 	{
-		pthread_cond_wait(&dongle->cond, &dongle->mutex);
-	}
-	if (!is_running(coder->sim))
-	{
-		heap_remove(dongle->priority_queue, coder);
-		pthread_cond_broadcast(&dongle->cond);
-		pthread_mutex_unlock(&dongle->mutex);
-		return (0);
+		remaining = get_remaining_cooldown(dongle, cooldown);
+
+		if (!dongle->occupied && remaining <= 0 && heap_peek(dongle->priority_queue) == (void *)coder)
+			break;
+
+		if (remaining > 0)
+		{
+			_timespec = ms_to_timespec(remaining);
+			pthread_cond_timedwait(&dongle->cond, &dongle->mutex, &_timespec);
+		}
+		else
+			pthread_cond_wait(&dongle->cond, &dongle->mutex);
+		
+
+		if (!is_running(coder->sim))
+		{
+			pthread_mutex_unlock(&dongle->mutex);
+			return (0);
+		}
 	}
 
+	dongle->occupied = 1;
+	
+	heap_pop(dongle->priority_queue); 
+	
 	print_status(coder, "has taken a dongle");
+	pthread_mutex_unlock(&dongle->mutex);
 	return (1);
 }
 
 static void release_dongle(t_dongle *dongle)
 {
-	dongle->last_time_used = TIME;
-	heap_pop(dongle->priority_queue);
+	pthread_mutex_lock(&dongle->mutex);
+	dongle->occupied = 0;
+	dongle->last_time_used = TIME; 
 	pthread_cond_broadcast(&dongle->cond);
 	pthread_mutex_unlock(&dongle->mutex);
-}
-
-static int compile(t_coder *coder, t_simulation *sim)
-{
-	t_dongle		*left;
-	t_dongle		*right;
-
-	left = &sim->dongles[coder->c_id];
-	right = &sim->dongles[(coder->c_id + 1) % sim->settings->number_of_coders];
-
-	if (coder->c_id == sim->settings->number_of_coders-1)
-		ft_swap((void **)&left, (void **)&right);
-
-	if (!take_dongle(coder, left))
-		return (0);
-
-	if (left == right)
-	{
-		while (is_running(coder->sim))
-			pthread_cond_wait(&left->cond, &left->mutex);
-		release_dongle(left);
-		return (0);
-	}
-
-	if (!take_dongle(coder, right))
-	{
-		release_dongle(left);
-		return (0);
-	}
-
-	pthread_mutex_lock(&coder->mutex);
-	coder->last_compilation = TIME;
-
-	print_status(coder, "is compiling");
-	usleep(sim->settings->time_to_compile * 1000);
-
-	release_dongle(left);
-	release_dongle(right);
-
-	coder->compilation_count++;
-	pthread_mutex_unlock(&coder->mutex);
-	return (1);
 }
 
 void	*worker(void *arg)
 {
 	t_coder			*coder;
-	t_simulation	*simulation;
 
 	coder = (t_coder *)arg;
-	simulation = coder->sim;
+
+	if (coder->c_id % 2 != 0)
+		usleep(10);
 
 	while(is_running(coder->sim))
 	{
-		if (!compile(coder, simulation))
-			continue;
+		if (!queue_dongle(coder, coder->dongles[0]) || !queue_dongle(coder, coder->dongles[1]))
+			return NULL;
+
+		pthread_mutex_lock(&coder->mutex);
+		coder->last_compilation = TIME;
+		pthread_mutex_unlock(&coder->mutex);
+		print_status(coder, "is compiling");
+		precise_sleep(coder->sim->settings->time_to_compile, coder->sim);
+
+		release_dongle(coder->dongles[0]);
+		release_dongle(coder->dongles[1]);
 
 		print_status(coder, "is debugging");
-		usleep(simulation->settings->time_to_debug * 1000);
+		precise_sleep(coder->sim->settings->time_to_debug, coder->sim);
 		print_status(coder, "is refactoring");
-		usleep(simulation->settings->time_to_refactor * 1000);
+		precise_sleep(coder->sim->settings->time_to_refactor, coder->sim);
+
+		pthread_mutex_lock(&coder->mutex);
+		coder->compilation_count++;
+		pthread_mutex_unlock(&coder->mutex);
 	}
 	return NULL;
 }

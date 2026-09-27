@@ -25,6 +25,8 @@ static t_simulation	*create_simulation(t_settings *settings)
 		simulation->coders[i].sim = simulation;
 		simulation->coders[i].c_id = i;
 		simulation->coders[i].last_compilation = TIME;
+        simulation->coders[i].dongles[0] = &simulation->dongles[i];
+        simulation->coders[i].dongles[1] = &simulation->dongles[(i + 1) % settings->number_of_coders];
 		pthread_mutex_init(&simulation->dongles[i].mutex, NULL);
 		pthread_mutex_init(&simulation->coders[i].mutex, NULL);
 		simulation->dongles[i].priority_queue = heap_allocate(2);

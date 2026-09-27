@@ -18,9 +18,27 @@ void print_status(t_coder *coder, const char *status)
     pthread_mutex_unlock(&coder->sim->print_mutex);
 }
 
+long long get_remaining_cooldown(t_dongle *dongle, long long cooldown)
+{
+    return (cooldown - (TIME - dongle->last_time_used));
+}
+
 void sleep_remaining_cooldown(t_dongle *d, long long cooldown)
 {
     long long elapsed = TIME - d->last_time_used;
     if (elapsed < cooldown)
         usleep((cooldown - elapsed) * 1000);
+}
+
+void precise_sleep(long long duration_ms, t_simulation *sim)
+{
+    long long start;
+
+    start = get_time_ms();
+    while (is_running(sim))
+    {
+        if ((get_time_ms() - start) >= duration_ms)
+            break;
+        usleep(100); // Pausa minima per non fondere la CPU
+    }
 }
