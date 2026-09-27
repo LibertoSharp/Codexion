@@ -64,8 +64,8 @@ void	*worker(void *arg)
 
 	coder = (t_coder *)arg;
 
-	if (coder->c_id == coder->sim->settings->number_of_coders - 1)
-		ft_swap((void *)coder->dongles, (void *)(coder->dongles + 1));
+	if (coder->c_id % 2 != 0)
+		ft_swap((void *)coder->dongles,(void *)(coder->dongles + 1));
 
 	while(is_running(coder->sim))
 	{
