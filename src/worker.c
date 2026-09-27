@@ -46,7 +46,7 @@ static int queue_dongle(t_coder *coder, t_dongle *dongle)
 	
 	print_status(coder, "has taken a dongle");
 	pthread_mutex_unlock(&dongle->mutex);
-	return (1);
+	return (coder->dongles[0] != coder->dongles[1]);
 }
 
 static void release_dongle(t_dongle *dongle)
@@ -64,8 +64,8 @@ void	*worker(void *arg)
 
 	coder = (t_coder *)arg;
 
-	if (coder->c_id % 2 != 0)
-		usleep(10);
+	if (coder->c_id == coder->sim->settings->number_of_coders - 1)
+		ft_swap((void *)coder->dongles, (void *)(coder->dongles + 1));
 
 	while(is_running(coder->sim))
 	{

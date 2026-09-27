@@ -25,8 +25,8 @@ static void	heap_order(t_heap *heap)
 			i++;
 		else
 		{
-			i = 0;
 			ft_swap(&heap->elements[i], &heap->elements[i + 1]);
+			i = 0;
 		}
 	}
 }
