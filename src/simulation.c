@@ -32,6 +32,7 @@ static t_simulation	*create_simulation(t_settings *settings)
 		simulation->dongles[i].priority_queue = heap_allocate(2);
 		pthread_cond_init(&simulation->dongles[i].cond, NULL);
 		set_scheduler_function(settings, simulation->dongles + i);
+		simulation->dongles[i].occupied = 1; // Prevent immediate acquisition at t=0
 	}
 	simulation->running = 1;
 	simulation->start_time = TIME;
@@ -106,6 +107,28 @@ void	run(t_settings *settings)
 	while (i < settings->number_of_coders)
 	{
 		pthread_create(&simulation->coders[i].t_id, NULL, worker, simulation->coders + i);
+		i++;
+	}
+
+	// Synchronize start to avoid non-deterministic race conditions
+	usleep(50000); 
+
+	simulation->start_time = TIME; 
+	i = 0;
+	while (i < settings->number_of_coders)
+	{
+		simulation->coders[i].last_compilation = simulation->start_time;
+		simulation->dongles[i].last_time_used = simulation->start_time - settings->dongle_cooldown;
+		i++;
+	}
+
+	i = 0;
+	while (i < settings->number_of_coders)
+	{
+		pthread_mutex_lock(&simulation->dongles[i].mutex);
+		simulation->dongles[i].occupied = 0;
+		pthread_cond_broadcast(&simulation->dongles[i].cond);
+		pthread_mutex_unlock(&simulation->dongles[i].mutex);
 		i++;
 	}
 

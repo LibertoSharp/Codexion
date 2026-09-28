@@ -47,7 +47,8 @@ typedef struct s_coder
 	int				c_id;
 	pthread_t		t_id;
 	int				compilation_count;
-	long			last_compilation;
+	long long		last_compilation;
+	long long		arrival_time;
     t_dongle        *dongles[2];
 }	t_coder;
 

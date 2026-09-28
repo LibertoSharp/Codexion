@@ -1,0 +1,38 @@
+--- src/worker.c
++++ src/worker.c
+@@ -10,6 +10,14 @@
+ 
++long long get_rounded_time(t_simulation *sim)
++{
++    long long t = TIME - sim->start_time;
++    t = ((t + 5) / 10) * 10;
++    return t + sim->start_time;
++}
++
+ static int queue_dongle(t_coder *coder, t_dongle *dongle)
+ {
+ 	long long cooldown;
+ 	long long remaining;
+ 	struct timespec _timespec;
+ 
+ 	pthread_mutex_lock(&dongle->mutex);
+-	coder->arrival_time = TIME;
++	coder->arrival_time = get_rounded_time(coder->sim);
+ 	heap_append(dongle->priority_queue, (void *)coder);
+ 
+@@ -53,7 +61,7 @@ static void release_dongle(t_dongle *dongle)
+ 	pthread_mutex_lock(&dongle->mutex);
+ 	dongle->occupied = 0;
+-	dongle->last_time_used = TIME; 
++	dongle->last_time_used = get_rounded_time(dongle->sim); // Virtual erasure of delay
+ 	pthread_cond_broadcast(&dongle->cond);
+ 	pthread_mutex_unlock(&dongle->mutex);
+ }
+@@ -74,7 +82,7 @@ void	*worker(void *arg)
+ 		if (!queue_dongle(coder, coder->dongles[1])) return NULL;
+ 
+ 		pthread_mutex_lock(&coder->mutex);
+-		coder->last_compilation = TIME;
++		coder->last_compilation = get_rounded_time(coder->sim); // Virtual erasure of delay
+ 		pthread_mutex_unlock(&coder->mutex);
+ 		print_status(coder, "is compiling");

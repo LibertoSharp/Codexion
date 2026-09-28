@@ -33,12 +33,19 @@ void sleep_remaining_cooldown(t_dongle *d, long long cooldown)
 void precise_sleep(long long duration_ms, t_simulation *sim)
 {
     long long start;
+    long long elapsed;
 
     start = get_time_ms();
     while (is_running(sim))
     {
-        if ((get_time_ms() - start) >= duration_ms)
+        elapsed = get_time_ms() - start;
+        if (elapsed >= duration_ms)
             break;
-        usleep(100); // Pausa minima per non fondere la CPU
+        if (duration_ms - elapsed > 10)
+            usleep((duration_ms - elapsed - 10) * 1000);
+        else if (duration_ms - elapsed > 2)
+            usleep((duration_ms - elapsed - 2) * 1000);
+        else
+            usleep(50); 
     }
 }
