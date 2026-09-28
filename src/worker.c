@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   worker.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: luca <luca@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: lavverat <lavverat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/28 13:33:20 by luca              #+#    #+#             */
-/*   Updated: 2026/09/28 13:48:55 by luca             ###   ########.fr       */
+/*   Updated: 2026/09/28 19:09:23 by lavverat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,12 @@ static int	wait_for_dongle(t_coder *coder, t_dongle *dongle,
 
 	while (1)
 	{
+		if (!is_running(coder->sim))
+		{
+			heap_remove(dongle->priority_queue, coder);
+			pthread_mutex_unlock(&dongle->mutex);
+			return (0);
+		}
 		remaining = get_remaining_cooldown(dongle, cooldown);
 		if (remaining <= 3)
 			remaining = 0;
@@ -48,11 +54,6 @@ static int	wait_for_dongle(t_coder *coder, t_dongle *dongle,
 		}
 		else
 			pthread_cond_wait(&dongle->cond, &dongle->mutex);
-		if (!is_running(coder->sim))
-		{
-			pthread_mutex_unlock(&dongle->mutex);
-			return (0);
-		}
 	}
 	return (1);
 }

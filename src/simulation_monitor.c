@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   simulation_monitor.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: luca <luca@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: lavverat <lavverat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/28 00:00:00 by luca              #+#    #+#             */
-/*   Updated: 2026/09/28 14:00:58 by luca             ###   ########.fr       */
+/*   Updated: 2026/09/28 19:09:21 by lavverat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,9 @@ void	stop_running(t_simulation *sim)
 	i = 0;
 	while (i < sim->settings->number_of_coders)
 	{
+		pthread_mutex_lock(&sim->dongles[i].mutex);
 		pthread_cond_broadcast(&sim->dongles[i].cond);
+		pthread_mutex_unlock(&sim->dongles[i].mutex);
 		i++;
 	}
 }

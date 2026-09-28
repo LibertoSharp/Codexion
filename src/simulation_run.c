@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   simulation_run.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: luca <luca@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: lavverat <lavverat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/28 00:00:00 by luca              #+#    #+#             */
-/*   Updated: 2026/09/28 13:49:18 by luca             ###   ########.fr       */
+/*   Updated: 2026/09/28 18:58:26 by lavverat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,8 +81,8 @@ void	run(t_settings *settings)
 	t_simulation	*simulation;
 
 	simulation = create_simulation(settings);
-	start_workers(simulation);
 	initialize_runtime(simulation, settings);
+	start_workers(simulation);
 	monitor(simulation);
 	cleanup_simulation(simulation);
 }
