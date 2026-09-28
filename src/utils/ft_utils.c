@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_utils.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: luca <luca@student.42.fr>                  +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/28 13:02:20 by luca              #+#    #+#             */
+/*   Updated: 2026/09/28 13:02:57 by luca             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "utils/ft_utils.h"
 #include <stdlib.h>
 
@@ -31,12 +43,11 @@ void	*ft_calloc(size_t nmemb, size_t size)
 	return (ptr);
 }
 
-void ft_swap(void **a, void **b)
+void	ft_swap(void **a, void **b)
 {
-    void *c;
+	void	*c;
 
-    c = *a;
-    *a = *b;
-    *b = c;
+	c = *a;
+	*a = *b;
+	*b = c;
 }
-

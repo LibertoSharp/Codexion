@@ -1,8 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   simulation.h                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: luca <luca@student.42.fr>                  +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/28 13:27:55 by luca              #+#    #+#             */
+/*   Updated: 2026/09/28 13:28:29 by luca             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef SIMULATION_H
 # define SIMULATION_H
 
-#include <pthread.h>
-#include "utils/heap.h"
+# include <pthread.h>
+# include "utils/heap.h"
 # define S_FIFO 0
 # define S_EDF 1
 
@@ -18,7 +30,7 @@ typedef struct s_settings
 	int	scheduler;
 }	t_settings;
 
-typedef struct s_coder t_coder;
+typedef struct s_coder	t_coder;
 
 typedef struct s_dongle
 {
@@ -26,8 +38,8 @@ typedef struct s_dongle
 	pthread_cond_t	cond;
 	long			last_time_used;
 	t_heap			*priority_queue;
-    int             occupied;
-} t_dongle;
+	int				occupied;
+}	t_dongle;
 
 typedef struct s_simulation
 {
@@ -49,7 +61,7 @@ typedef struct s_coder
 	int				compilation_count;
 	long long		last_compilation;
 	long long		arrival_time;
-    t_dongle        *dongles[2];
+	t_dongle		*dongles[2];
 }	t_coder;
 
 void	run(t_settings *settings);

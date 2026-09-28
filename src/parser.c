@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parser.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: luca <luca@student.42.fr>                  +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/28 13:26:14 by luca              #+#    #+#             */
+/*   Updated: 2026/09/28 13:27:24 by luca             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "parser.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -20,42 +32,37 @@ static int	get_positive_integer(char *str)
 t_settings	*s_parse(int argc, char **argv)
 {
 	t_settings	*sim;
-	int				i;
+	int			i;
 
 	if (argc != 9)
 		return (NULL);
 	sim = (t_settings *)malloc(sizeof(t_settings));
 	if (sim == NULL)
 		return (NULL);
-
 	i = 0;
 	while (i < 7)
 	{
-		((int *)sim)[i] = get_positive_integer(argv[i+1]);
+		((int *)sim)[i] = get_positive_integer(argv[i + 1]);
 		if (((int *)sim)[i++] == -1)
 			return (free(sim), NULL);
 	}
-
 	if (strcmp("fifo", argv[8]) == 0)
 		sim->scheduler = S_FIFO;
 	else if (strcmp("edf", argv[8]) == 0)
 		sim->scheduler = S_EDF;
 	else
 		return (free(sim), NULL);
-
 	return (sim);
 }
 
 void	s_print(t_settings *sim)
 {
 	printf("Simulation Settings:");
-
 	if (sim == NULL)
 	{
 		printf(" NULL\n");
-		return;
+		return ;
 	}
-
 	printf("\n - number_of_coders: %d", sim->number_of_coders);
 	printf("\n - time_to_burnout: %d", sim->time_to_burnout);
 	printf("\n - time_to_compile: %d", sim->time_to_compile);
@@ -66,9 +73,9 @@ void	s_print(t_settings *sim)
 	printf("\n - scheduler: %s\n", s_scheduler_name(sim->scheduler));
 }
 
-const char *s_scheduler_name(int scheduler)
+const char	*s_scheduler_name(int scheduler)
 {
-	static const char *literals[] = {"FIFO", "EDF"};
+	static const char	*literals[] = {"FIFO", "EDF"};
 
 	if (scheduler != S_FIFO && scheduler != S_EDF)
 		return ("UKNOWN");
