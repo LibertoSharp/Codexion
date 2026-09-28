@@ -6,7 +6,7 @@
 /*   By: luca <luca@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/28 13:26:14 by luca              #+#    #+#             */
-/*   Updated: 2026/09/28 13:27:24 by luca             ###   ########.fr       */
+/*   Updated: 2026/09/28 13:52:18 by luca             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,9 @@ t_settings	*s_parse(int argc, char **argv)
 	while (i < 7)
 	{
 		((int *)sim)[i] = get_positive_integer(argv[i + 1]);
-		if (((int *)sim)[i++] == -1)
+		if (((int *)sim)[i] == -1)
 			return (free(sim), NULL);
+		i++;
 	}
 	if (strcmp("fifo", argv[8]) == 0)
 		sim->scheduler = S_FIFO;
@@ -68,7 +69,8 @@ void	s_print(t_settings *sim)
 	printf("\n - time_to_compile: %d", sim->time_to_compile);
 	printf("\n - time_to_debug: %d", sim->time_to_debug);
 	printf("\n - time_to_refactor: %d", sim->time_to_refactor);
-	printf("\n - number_of_compiles_required: %d", sim->number_of_compiles_required);
+	printf("\n - number_of_compiles_required: %d",
+		sim->number_of_compiles_required);
 	printf("\n - dongle_cooldown: %d", sim->dongle_cooldown);
 	printf("\n - scheduler: %s\n", s_scheduler_name(sim->scheduler));
 }

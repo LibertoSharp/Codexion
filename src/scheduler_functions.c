@@ -6,7 +6,7 @@
 /*   By: luca <luca@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/28 13:44:37 by luca              #+#    #+#             */
-/*   Updated: 2026/09/28 13:45:11 by luca             ###   ########.fr       */
+/*   Updated: 2026/09/28 13:48:11 by luca             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@ int	fifo(void *e1, void *e2)
 
 	left = (t_coder *)e1;
 	right = (t_coder *)e2;
-
 	if (left->arrival_time != right->arrival_time)
 		return (left->arrival_time < right->arrival_time);
 	return (left->c_id < right->c_id);
@@ -34,7 +33,6 @@ int	edf(void *e1, void *e2)
 
 	left = (t_coder *)e1;
 	right = (t_coder *)e2;
-
 	if (left->last_compilation != right->last_compilation)
 		return (left->last_compilation < right->last_compilation);
 	if (left->compilation_count != right->compilation_count)

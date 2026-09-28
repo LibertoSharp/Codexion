@@ -6,7 +6,7 @@
 /*   By: luca <luca@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/28 13:27:55 by luca              #+#    #+#             */
-/*   Updated: 2026/09/28 13:28:29 by luca             ###   ########.fr       */
+/*   Updated: 2026/09/28 13:49:52 by luca             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,10 @@ typedef struct s_coder
 	t_dongle		*dongles[2];
 }	t_coder;
 
-void	run(t_settings *settings);
-int		is_running(t_simulation *sim);
+void			run(t_settings *settings);
+int				is_running(t_simulation *sim);
+t_simulation	*create_simulation(t_settings *settings);
+void			stop_running(t_simulation *sim);
+void			monitor(t_simulation *simulation);
+void			cleanup_simulation(t_simulation *simulation);
 #endif

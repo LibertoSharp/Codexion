@@ -6,7 +6,7 @@
 /*   By: luca <luca@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/28 13:33:20 by luca              #+#    #+#             */
-/*   Updated: 2026/09/28 13:34:29 by luca             ###   ########.fr       */
+/*   Updated: 2026/09/28 13:48:55 by luca             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #include <unistd.h>
 #include "utils/worker_utils.h"
 
-static long long	get_rounded_time(t_simulation *sim)
+long long	get_rounded_time(t_simulation *sim)
 {
 	long long	t;
 
@@ -27,25 +27,19 @@ static long long	get_rounded_time(t_simulation *sim)
 	return (t + sim->start_time);
 }
 
-static int	queue_dongle(t_coder *coder, t_dongle *dongle)
+static int	wait_for_dongle(t_coder *coder, t_dongle *dongle,
+		long long cooldown)
 {
-	long long		cooldown;
 	long long		remaining;
 	struct timespec	_timespec;
 
-	pthread_mutex_lock(&dongle->mutex);
-	coder->arrival_time = get_rounded_time(coder->sim);
-	heap_append(dongle->priority_queue, (void *)coder);
-	pthread_mutex_unlock(&dongle->mutex);
-	usleep(500);
-	pthread_mutex_lock(&dongle->mutex);
-	cooldown = coder->sim->settings->dongle_cooldown;
 	while (1)
 	{
 		remaining = get_remaining_cooldown(dongle, cooldown);
 		if (remaining <= 3)
 			remaining = 0;
-		if (!dongle->occupied && remaining <= 0 && heap_peek(dongle->priority_queue) == (void *)coder)
+		if (!dongle->occupied && remaining <= 0
+			&& heap_peek(dongle->priority_queue) == (void *)coder)
 			break ;
 		if (remaining > 0)
 		{
@@ -60,6 +54,22 @@ static int	queue_dongle(t_coder *coder, t_dongle *dongle)
 			return (0);
 		}
 	}
+	return (1);
+}
+
+int	queue_dongle(t_coder *coder, t_dongle *dongle)
+{
+	long long	cooldown;
+
+	pthread_mutex_lock(&dongle->mutex);
+	coder->arrival_time = get_rounded_time(coder->sim);
+	heap_append(dongle->priority_queue, (void *)coder);
+	pthread_mutex_unlock(&dongle->mutex);
+	usleep(500);
+	pthread_mutex_lock(&dongle->mutex);
+	cooldown = coder->sim->settings->dongle_cooldown;
+	if (!wait_for_dongle(coder, dongle, cooldown))
+		return (0);
 	dongle->occupied = 1;
 	heap_pop(dongle->priority_queue);
 	print_status(coder, "has taken a dongle");
@@ -67,7 +77,7 @@ static int	queue_dongle(t_coder *coder, t_dongle *dongle)
 	return (1);
 }
 
-static void	release_dongle(t_coder *coder, t_dongle *dongle)
+void	release_dongle(t_coder *coder, t_dongle *dongle)
 {
 	pthread_mutex_lock(&dongle->mutex);
 	dongle->occupied = 0;
@@ -85,24 +95,8 @@ void	*worker(void *arg)
 		ft_swap((void *)&coder->dongles[0], (void *)&coder->dongles[1]);
 	while (is_running(coder->sim))
 	{
-		if (!queue_dongle(coder, coder->dongles[0]))
+		if (!worker_cycle(coder))
 			return (NULL);
-		if (!queue_dongle(coder, coder->dongles[1]))
-			return (NULL);
-		pthread_mutex_lock(&coder->mutex);
-		coder->last_compilation = get_rounded_time(coder->sim) + 5;
-		pthread_mutex_unlock(&coder->mutex);
-		print_status(coder, "is compiling");
-		precise_sleep(coder->sim->settings->time_to_compile, coder->sim);
-		release_dongle(coder, coder->dongles[0]);
-		release_dongle(coder, coder->dongles[1]);
-		print_status(coder, "is debugging");
-		precise_sleep(coder->sim->settings->time_to_debug, coder->sim);
-		print_status(coder, "is refactoring");
-		precise_sleep(coder->sim->settings->time_to_refactor, coder->sim);
-		pthread_mutex_lock(&coder->mutex);
-		coder->compilation_count++;
-		pthread_mutex_unlock(&coder->mutex);
 	}
 	return (NULL);
 }
