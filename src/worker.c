@@ -6,7 +6,7 @@
 /*   By: lavverat <lavverat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/28 13:33:20 by luca              #+#    #+#             */
-/*   Updated: 2026/09/28 19:09:23 by lavverat         ###   ########.fr       */
+/*   Updated: 2026/10/02 14:05:09 by lavverat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,8 +38,7 @@ static int	wait_for_dongle(t_coder *coder, t_dongle *dongle,
 		if (!is_running(coder->sim))
 		{
 			heap_remove(dongle->priority_queue, coder);
-			pthread_mutex_unlock(&dongle->mutex);
-			return (0);
+			return (pthread_mutex_unlock(&dongle->mutex), 0);
 		}
 		remaining = get_remaining_cooldown(dongle, cooldown);
 		if (remaining <= 3)
